@@ -33,6 +33,10 @@ I included the User, Pet, Task, DailyPlan, Scheduler, and Constraints classes. U
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+Yes, I asked Copilot to see if I was missing anything or if it could recommend some additions that could work, and it suggested to included a Constraints class that would help with flow of the code. This would make classes like DailyPlan and Scheduler to not have more methods and attributes than it needed.
+
+I also had changes to the time constraint. I wanted to include a more natural time rather than just "afternoon, morning, etc.".
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
