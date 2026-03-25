@@ -2,10 +2,31 @@
 
 ## 1. System Design
 
+# Three main actions a user could do: 
+
+-A user could add their and their pet's info.
+-A user could add events that have different time lengths and priorities.
+-A user could see a visualization of their plan.
+
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+
+The UML class diagram for PawPal+ consists of six main classes: User, Pet, Task, DailyPlan, Scheduler, and Constraint.
+
+- User represents the pet owner with attributes like name, pet, and preferences, and methods to update preferences and get pet info.
+- Pet represents the pet with name, type, and optional age, and a method to get info.
+- Task represents care tasks with type, duration, priority, and preferred time, and methods to update priority and duration.
+- DailyPlan represents a day's plan with a list of tasks, total time, and constraints, and methods to manage tasks and calculate time.
+- Scheduler generates plans using tasks and constraints, with methods to sort tasks, apply constraints, and explain plans.
+- Constraint defines rules like max time and preferred times, with methods to check and apply constraints.
+
+Relationships include User having a Pet, DailyPlan containing Tasks and Constraints, and Scheduler managing Tasks, using Constraints, and generating DailyPlans.
+
 - What classes did you include, and what responsibilities did you assign to each?
+
+I included the User, Pet, Task, DailyPlan, Scheduler, and Constraints classes. User is for the pet owner. Pet is for the pet being cared for. Task represents a single task. DailyPlan is the plan for the day. Scheduler is responsible for generating the daily plan. Constraints holds the rules the Scheduler must follow.
 
 **b. Design changes**
 
