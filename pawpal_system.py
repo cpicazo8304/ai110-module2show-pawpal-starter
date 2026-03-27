@@ -142,8 +142,8 @@ class Task:
             Optional[datetime]: The calculated end time as a datetime object,
                             or None if start_time is not set.
         """
-        start_dt = self.start_time + timedelta(minutes=self.duration)
-        end_dt = start_dt + timedelta(minutes=self.duration)
+        start_dt = self.start_time
+        end_dt = start_dt + timedelta(minutes=self.duration) 
         return end_dt
     
     def get_duration(self) -> int: 

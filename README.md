@@ -43,7 +43,7 @@ pip install -r requirements.txt
 7. Refine UML so it matches what you actually built.
 
 
-### Main Features
+## Main Features
 
 **Time-based scheduling:** tasks are validated against the user's available time slots and total free time budget before being added to the plan, ensuring nothing gets scheduled outside the owner's availability.
 
@@ -67,3 +67,39 @@ The scheduler includes four core features that work together to automate and org
 **Automated Recurring Tasks:** when a task marked as daily or weekly is completed, the scheduler automatically generates the next occurrence using Python's timedelta, scheduling it one day or one week out respectively. This removes the need to manually re-enter routine care tasks like feeding or medication.
 
 **Conflict Detection:** the scheduler scans all scheduled tasks pairwise and flags any two tasks whose time windows overlap, surfacing a warning message rather than silently dropping or crashing. This keeps the user informed without disrupting the rest of the schedule. This is done mainly in App.py that takes advantage of the Constraints class in the system code.
+
+## Testing PawPal+
+
+### 5 Main Methods Tested (description)
+
+Covers:
+  1. Chronological sorting  — tasks added out of order come out sorted correctly.
+  2. Constraint validation  — rejects overlapping, over-budget, and invalid-slot tasks.
+  3. Recurring tasks        — mark_complete() produces the right next-occurrence datetime.
+  4. Conflict detection     — flags overlapping pairs; ignores back-to-back tasks.
+  5. Completion filtering   — excludes done tasks; handles all-complete and empty plans.
+
+
+Confidence Level: ⭐⭐⭐⭐⭐
+
+## Demo
+
+### Create Profile
+
+![Screenshot](screenshot/create-profile-area.png)
+
+### Add Tasks
+
+![Screenshot](screenshot/add-task-area.png)
+
+### Conflicting Tasks
+
+![Screenshot](screenshot/conflicts.png)
+
+### Recurring Tasks
+
+![Screenshot](screenshot/recurring-tasks.png)
+
+### Filtering
+
+![Screenshot](screenshot/filtering.png)

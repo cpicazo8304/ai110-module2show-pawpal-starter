@@ -79,7 +79,7 @@ The most helpful was having the AI apply comments to where the changes were made
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 
-I wanted to compare ChatGPT with Copilot and Claude, but it would suggest high-level libraries that I don't know about, so I would just ignore it, and move on to just the ideas I was trying to suggest and implement in my own way. Also, AI tools in general seem to struggle with errors undelined by the pylance, so I usually just figure those out on my own.
+I wanted to compare ChatGPT with Copilot and Claude, but it would suggest high-level libraries that I don't know about, so I would just ignore it, and move on to just the ideas I was trying to suggest and implement in my own way. 
 
 - How did you evaluate or verify what the AI suggested?
 
@@ -92,12 +92,22 @@ With my known knowledge, I analyze the code before making any changes to see if 
 **a. What you tested**
 
 - What behaviors did you test?
+
+I tested the sorting, filtering, automated recurring tasks, conflict detection, and completion filtering. 
+
 - Why were these tests important?
+
+These tests were important because they tested the more advanced behaviors that are more susceptible to mistakes and logical errors. Also, they are the backbone to this app. If any of these behaviors don't work, to can break the whole system, so making sure they are working well is significant.
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
+
+I am fairly confident because of how I organized it. By splitting into two classes essentially (DailyPlan and Scheduler), it made it easier to organize the different methods. 
+
 - What edge cases would you test next if you had more time?
+
+I would probably test if my conflict detection system not only looks at conflicting tasks of the same pet but also between pets. This could give a good idea of how advanced the conflict detection system is. 
 
 ---
 
@@ -126,10 +136,20 @@ I learned that organization, brainstorming, and visualization is very important.
 
 - Specifically describe your experience with VS Code Copilot:
 
+VS Code Copilot did excellent in providing a very well made skeleton. I usually didn't want to do large amounts of code so I won't fall behind in understanding the code and the main features, but it helped debugging, fixing my code, suggesting improvements, etc.
+
 - Which Copilot features were most effective for building your scheduler?
+
+Agent and edit mode did well in suggesting methods that could either add to the ones I came up with or improve on some of them.
 
 - Give one example of an AI suggestion you rejected or modified to keep your system design clean.
 
+AI tools in general seem to struggle with errors undelined by the pylance, so I usually just figure those out on my own, by backtracking and looking through the code and asking AI about different libraries (which is where it helped but not with fully understanding what was going on). 
+
 - How did using separate chat sessions for different phases help you stay organized?
 
+It helped know where to ask certain questions. If I was focusing on a certain file, I would go to one chat, and if I was working on another, I would go to the other chat. If I needed to go back and check what Copilot said, it was easier to find. Sometimes, these sessions can get very long if you keep on asking questions (especially when it doesn't give what you want) so utilizing different sessions helped.
+
 - Summarize what you learned about being the "lead architect" when collaborating with powerful AI tools.
+
+I learned to repeatedly check on the code and see if it worked, made changes when needed, debugged properly, and only ask AI for specific implementations rather than broad implementations.
