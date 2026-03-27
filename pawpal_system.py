@@ -62,23 +62,43 @@ class Task:
     Attributes:
         task_type (str): The category/name of the task (e.g., 'walk', 'feeding').
         duration (int): How long the task takes, in minutes.
-        start_time (Optional[str]): The scheduled start time in 'HH:MM' 24-hour format.
-                                    Defaults to None if unscheduled.
+        start_time (Optional[time]): The scheduled start time as a datetime.time object.
+                                     Defaults to None if unscheduled.
         completed (bool): Whether the task has been completed. Defaults to False.
     """
 
     task_type: str
-    duration: int  # in minutes
-    start_time: Optional[str] = None  # in HH:MM format
-    completed: bool = False  # new attribute
+    duration: int
+    start_time: datetime
+    completed: bool = False
+    frequency: Optional[str] = None
 
-    def mark_complete(self):
+    def mark_complete(self) -> Optional['Task']:
         """Mark this task as completed by setting the completed flag to True."""
         self.completed = True
+
+        if self.frequency == "daily":
+            return Task(
+                task_type=self.task_type,
+                duration=self.duration,
+                start_time=self.start_time + timedelta(days=1),
+                frequency=self.frequency,
+            )
+        elif self.frequency == "weekly":
+            return Task(
+                task_type=self.task_type,
+                duration=self.duration,
+                start_time=self.start_time + timedelta(weeks=1),
+                frequency=self.frequency,
+            )
+        return None
 
     def set_start_time(self, start_time: str):
         """
         Set and validate the task's start time.
+
+        Converts a string in 'HH:MM' format into a datetime.time object
+        for consistent internal representation.
 
         Args:
             start_time (str): Time string in 'HH:MM' 24-hour format.
@@ -87,57 +107,49 @@ class Task:
             ValueError: If the provided string does not match the expected format.
         """
         try:
-            dt = datetime.strptime(start_time, "%H:%M")
-            self.start_time = dt.strftime("%H:%M")
+            self.start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
         except ValueError:
-            raise ValueError(f"Invalid time format: {start_time}. Use HH:MM 24-hour format.")
+            raise ValueError(
+                f"Invalid datetime format: {start_time}. Use YYYY-MM-DD HH:MM."
+            )
 
-    def update_duration(self, new_duration: int):
-        """
-        Replace the task's duration with a new value.
-
-        Args:
-            new_duration (int): The updated duration in minutes.
-        """
+    def update_duration(self, new_duration: int): 
+        """ 
+        Replace the task's duration with a new value. 
+        Args: new_duration (int): The updated duration in 
+        minutes. 
+        """ 
         self.duration = new_duration
 
-    def get_start_time(self):
+    def get_start_time(self) -> datetime:
         """
         Return the task's scheduled start time.
 
         Returns:
-            Optional[str]: The start time in 'HH:MM' format, or None if not set.
+            Optional[datetime]: The start time as a datetime object,
+                            or None if not set.
         """
         return self.start_time
 
-    def get_end_time(self):
+    def get_end_time(self) -> datetime:
         """
         Calculate the task's end time based on its start time and duration.
 
-        Uses today's date as a reference to perform the arithmetic, handling
-        potential midnight rollovers correctly.
+        Uses today's date as a reference to safely perform time arithmetic,
+        then returns only the time portion.
 
         Returns:
-            Optional[str]: The calculated end time in 'HH:MM' format,
-                           or None if start_time is not set.
+            Optional[datetime]: The calculated end time as a datetime object,
+                            or None if start_time is not set.
         """
-        if self.start_time is None:
-            return None
-        # Use today as reference date
-        today = date.today()
-        start_dt = datetime.strptime(self.start_time, "%H:%M").replace(
-            year=today.year, month=today.month, day=today.day
-        )
+        start_dt = self.start_time + timedelta(minutes=self.duration)
         end_dt = start_dt + timedelta(minutes=self.duration)
-        return end_dt.strftime("%H:%M")
+        return end_dt
     
-    def get_duration(self) -> int:
-        """
-        Return the duration of the task.
-
-        Returns:
-            int: Task duration in minutes.
-        """
+    def get_duration(self) -> int: 
+        """ 
+        Return the duration of the task. Returns: int: Task duration in minutes. 
+        """ 
         return self.duration
 
 
@@ -237,13 +249,15 @@ class Constraint:
             ValueError: If any time string in available_times is not valid 'HH:MM'.
         """
         self.max_time_available = max_time_available
-        self.available_times = []
+        from datetime import time as time_type
+        self._available_time_slots: List[time_type] = []
         for time_str in available_times:
             try:
-                dt = datetime.strptime(time_str, "%H:%M")
-                self.available_times.append(dt.strftime("%H:%M"))
+                self._available_time_slots.append(
+                    datetime.strptime(time_str, "%H:%M").time()
+                )
             except ValueError:
-                raise ValueError(f"Invalid available time: {time_str}. Use HH:MM 24-hour format.")
+                raise ValueError(f"Invalid time: {time_str}")
 
     def is_task_allowed(self, task: Task, current_plan: 'DailyPlan') -> bool:
         """
@@ -260,23 +274,17 @@ class Constraint:
 
         Returns:
             bool: True if the task passes all constraint checks, False otherwise.
-        """
-        if task.get_start_time() not in self.available_times:
+        """    
+        # Slot check: only the clock time matters for available_times
+        if task.start_time.time() not in self._available_time_slots:
             return False
-        
-        # Check for time overlap with existing tasks
-        for existing_task in current_plan.task_list:
-            if existing_task.start_time and task.start_time:
-                existing_end_str = existing_task.get_end_time()
-                new_end_str = task.get_end_time()
-                if existing_end_str and new_end_str:
-                    existing_start = datetime.strptime(existing_task.start_time, "%H:%M")
-                    existing_end = datetime.strptime(existing_end_str, "%H:%M")
-                    new_start = datetime.strptime(task.start_time, "%H:%M")
-                    new_end = datetime.strptime(new_end_str, "%H:%M")
-                    if new_start < existing_end and new_end > existing_start:
-                        return False
-        
+
+        # Overlap check: start_time is already datetime, compare directly
+        for existing in current_plan.task_list:
+            if existing.start_time and task.start_time:
+                if task.start_time < existing.get_end_time() and \
+                   task.get_end_time() > existing.start_time:
+                    return False
         if current_plan.get_total_time() + task.get_duration() > self.max_time_available:
             return False
         return True
@@ -357,18 +365,6 @@ class DailyPlan:
             self.task_list.remove(task)
             self.total_time -= duration
 
-    def edit_task(self, task: Task):
-        """
-        Edit an existing task in the plan.
-
-        Args:
-            task (Task): The task with updated values.
-
-        Note:
-            Not yet implemented.
-        """
-        pass
-
     def get_total_time(self) -> int:
         """
         Return the cumulative duration of all tasks currently in the plan.
@@ -415,7 +411,7 @@ class Scheduler:
         self.user = user
         self.constraints = Constraint(max_time_available=self.user.get_time_free(), available_times=self.user.get_available_times())
         self.pet = pet
-
+    
     def generate_plan(self) -> DailyPlan:
         """
         Produce a constraint-validated DailyPlan from the available tasks.
@@ -426,27 +422,36 @@ class Scheduler:
         Returns:
             DailyPlan: The finalized plan containing all schedulable tasks.
         """
-        sorted_tasks = self.sort_tasks_by_priority()
+        sorted_tasks = self.sort_tasks_by_time()
         plan = DailyPlan([], self.constraints)
         for task in sorted_tasks:
             plan.add_task(task, self.pet)
         return plan
 
-    def sort_tasks_by_priority(self) -> List[Task]:
+    def sort_tasks_by_time(self) -> List[Task]:
         """
         Sort the task list in ascending chronological order by start time.
 
-        Tasks without a start time are placed at the end of the list, as
-        datetime.min is used as their sort key.
+        Tasks are compared by converting their time values into full datetime
+        objects (using today's date). Tasks without a start time are placed
+        at the end using datetime.min.
 
         Returns:
             List[Task]: Tasks ordered from earliest to latest start time.
         """
         return sorted(
             self.tasks,
-            key=lambda t: datetime.strptime(t.start_time, "%H:%M") if t.start_time else datetime.min,
-            reverse=False
+            key=lambda t: t.start_time if t.start_time else datetime.min,
         )
+    
+    def filter_tasks_by_completion(self, plan: DailyPlan) -> List[Task]:
+        """
+        Filter the plan's tasks to only include those that are not marked as completed.
+
+        Args:
+            plan (DailyPlan): The plan whose tasks are to be filtered.
+        """
+        return [task for task in plan.get_tasks() if not task.completed]
     
     def apply_constraints(self, plan: DailyPlan):
         """
@@ -475,7 +480,40 @@ class Scheduler:
             return "No tasks in the plan."
         explanation = f"The pet {self.pet.name} has the following tasks scheduled:\n"
         for task in tasks:
-            start_str = f" (start at {task.start_time})" if task.start_time else ""
+            start_str = (
+                f" (start at {task.start_time.strftime('%Y-%m-%d %H:%M')})"
+                if task.start_time else ""
+            )
             explanation += f"- {task.task_type}: {task.duration} minutes{start_str}\n"
         explanation += f"Total time: {plan.get_total_time()} minutes"
         return explanation
+
+    def detect_conflicts(self, plan: DailyPlan) -> List[str]:
+        """
+        Check all task pairs in the plan for time overlaps.
+
+        Uses a lightweight O(n²) pairwise comparison: for every unique
+        pair of tasks, convert their start/end to datetime objects and
+        test whether the intervals overlap. Returns human-readable warning
+        strings — one per conflict — rather than raising an exception.
+
+        Returns:
+            List[str]: A (possibly empty) list of conflict warning messages.
+        """
+        warnings = []
+        tasks = plan.get_tasks()
+        for i in range(len(tasks)):
+            for j in range(i + 1, len(tasks)):
+                a, b = tasks[i], tasks[j]
+                if not (a.start_time and b.start_time):
+                    continue
+                if a.start_time < b.get_end_time() and a.get_end_time() > b.start_time:
+                    warnings.append(
+                        f"⚠️ Conflict: '{a.task_type}' "
+                        f"({a.start_time.strftime('%Y-%m-%d %H:%M')}–"
+                        f"{a.get_end_time().strftime('%H:%M')}) "
+                        f"overlaps with '{b.task_type}' "
+                        f"({b.start_time.strftime('%Y-%m-%d %H:%M')}–"
+                        f"{b.get_end_time().strftime('%H:%M')})"
+                    )
+        return warnings

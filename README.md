@@ -41,3 +41,29 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+
+### Main Features
+
+**Time-based scheduling:** tasks are validated against the user's available time slots and total free time budget before being added to the plan, ensuring nothing gets scheduled outside the owner's availability.
+
+**Add-pets section:** users can add as many pets as they want as long as the include the name and species of the pet.
+
+**User-info section:** users can add their info like their name and available times that the scheduler can take advantage of to create a good schedule for them.
+
+**Per-pet scheduling:** each pet gets its own independent plan and task list, managed through a tabbed interface so owners with multiple pets can track each animal's care separately.
+
+**Constraint validation:** every task is checked for start time eligibility, time overlap with existing tasks, and total duration budget before being accepted, with clear error feedback if any check fails.
+
+
+### Smarter Scheduling
+
+The scheduler includes four core features that work together to automate and organize daily pet care.
+
+**Sorting:** tasks are automatically sorted in chronological order before being added to the plan, so the schedule always flows from earliest to latest without any manual reordering from the user.
+
+**Filtering:** users can toggle a "hide completed tasks" switch to not show completed tasks in the schedule view, showing only the tasks that still need to be done for the day.
+
+**Automated Recurring Tasks:** when a task marked as daily or weekly is completed, the scheduler automatically generates the next occurrence using Python's timedelta, scheduling it one day or one week out respectively. This removes the need to manually re-enter routine care tasks like feeding or medication.
+
+**Conflict Detection:** the scheduler scans all scheduled tasks pairwise and flags any two tasks whose time windows overlap, surfacing a warning message rather than silently dropping or crashing. This keeps the user informed without disrupting the rest of the schedule. This is done mainly in App.py that takes advantage of the Constraints class in the system code.

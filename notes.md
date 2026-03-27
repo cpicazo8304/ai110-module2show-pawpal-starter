@@ -88,3 +88,40 @@ Represents rules that the schedule must follow.
 - is_task_allowed(task, current_plan)
 - check_time_constraint(plan)
 - apply(plan)  # modifies or filters plan
+
+
+
+*******CHANGE HERE******
+if st.button("Generate schedule"):
+    if not st.session_state.tasks:
+        st.warning("No tasks to schedule.")
+    else:
+        # simple constraint example
+        from pawpal_system import Constraint
+
+        constraint = Constraint(
+            max_time_available=300,  # 5 hours
+            available_times=[
+                t.start_time for t in st.session_state.tasks if t.start_time
+            ]
+        )
+
+        scheduler = Scheduler(st.session_state.tasks, constraint)
+        plan = scheduler.generate_plan()
+
+        st.success("Schedule generated!")
+
+        # Display plan
+        st.write("### Daily Plan")
+        st.table([
+            {
+                "Task": t.task_type,
+                "Start": t.start_time,
+                "Duration": t.duration
+            }
+            for t in plan.get_tasks()
+        ])
+
+        # Explanation
+        st.write("### Explanation")
+        st.write(scheduler.explain_plan(plan))
