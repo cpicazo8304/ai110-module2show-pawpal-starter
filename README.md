@@ -90,16 +90,16 @@ Confidence Level: ⭐⭐⭐⭐⭐
 
 ### Add Tasks
 
-![Screenshot](screenshot/add-task-area.png)
+![Screenshot](screenshots/add-task-area.png)
 
 ### Conflicting Tasks
 
-![Screenshot](screenshot/conflicts.png)
+![Screenshot](screenshots/conflicts.png)
 
 ### Recurring Tasks
 
-![Screenshot](screenshot/recurring-tasks.png)
+![Screenshot](screenshots/recurring-tasks.png)
 
 ### Filtering
 
-![Screenshot](screenshot/filtering.png)
+![Screenshot](screenshots/filtering.png)
